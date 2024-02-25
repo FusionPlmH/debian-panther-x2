@@ -61,7 +61,7 @@ main() {
     # u-boot
     local uboot_spl=$(download "$cache" 'https://github.com/FusionPlmH/debian-panther-x2/raw/main/uboot/idbloader.img')
     [ -f "$uboot_spl" ] || { echo "unable to fetch $uboot_spl"; exit 4; }
-    local uboot_itb=$(download "$cache" 'https://github.com/FusionPlmH/debian-panther-x2/raw/main/uboot/uboot.itb')
+    local uboot_itb=$(download "$cache" 'https://github.com/FusionPlmH/debian-panther-x2/raw/main/uboot/u-boot.itb')
     [ -f "$uboot_itb" ] || { echo "unable to fetch: $uboot_itb"; exit 4; }
 
     # dtb
