@@ -59,13 +59,13 @@ main() {
     local lfw=$(download "$cache" 'https://mirrors.edge.kernel.org/pub/linux/kernel/firmware/linux-firmware-20240220.tar.xz')
 
     # u-boot
-    local uboot_spl=$(download "$cache" 'https://github.com/FusionPlmH/debian-panther-x2/uboot/idbloader.img')
+    local uboot_spl=$(download "$cache" 'https://github.com/FusionPlmH/debian-panther-x2/raw/main/uboot/idbloader.img')
     [ -f "$uboot_spl" ] || { echo "unable to fetch $uboot_spl"; exit 4; }
     local uboot_itb=$(download "$cache" 'https://github.com/FusionPlmH/debian-panther-x2/uboot/uboot.itb')
     [ -f "$uboot_itb" ] || { echo "unable to fetch: $uboot_itb"; exit 4; }
 
     # dtb
-    local dtb=$(download "$cache" "https://github.com/FusionPlmH/debian-panther-x2/dtb/rk3566-panther-x2.dtb")
+    local dtb=$(download "$cache" "https://github.com/FusionPlmH/debian-panther-x2/raw/main/dtb/rk3566-panther-x2.dtb")
     [ -f "$dtb" ] || { echo "unable to fetch $dtb"; exit 4; }
 
     # setup media
