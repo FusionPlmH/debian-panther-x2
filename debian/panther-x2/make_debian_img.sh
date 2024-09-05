@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# Copyright (C) 2023, John Clark <inindev@gmail.com>
 
 set -e
 
@@ -56,7 +55,7 @@ main() {
     local cache="cache.$deb_dist"
 
     # linux firmware
-    local lfw=$(download "$cache" 'https://mirrors.edge.kernel.org/pub/linux/kernel/firmware/linux-firmware-20240220.tar.xz')
+    local lfw=$(download "$cache" 'https://mirrors.edge.kernel.org/pub/linux/kernel/firmware/linux-firmware-20240811.tar.xz')
 
     # u-boot
     local uboot_spl=$(download "$cache" 'https://github.com/FusionPlmH/debian-panther-x2/raw/main/uboot/idbloader.img')
@@ -88,10 +87,6 @@ main() {
     echo 'link_in_boot = 1' > "$mountpt/etc/kernel-img.conf"
     echo 'do_symlinks = 0' >> "$mountpt/etc/kernel-img.conf"
 
-    # setup fstab
-    local mdev="$(findmnt -no source "$mountpt")"
-    local uuid="$(blkid -o value -s UUID "$mdev")"
-    echo "$(file_fstab $uuid)\n" > "$mountpt/etc/fstab"
 
     # setup extlinux boot
     install -Dvm 754 'files/dtb_cp' "$mountpt/etc/kernel/postinst.d/dtb_cp"
@@ -104,9 +99,7 @@ main() {
     mkdir -p "$mountpt/usr/lib/firmware"
     local lfwn=$(basename "$lfw")
     local lfwbn="${lfwn%%.*}"
-    tar -C "$mountpt/usr/lib/firmware" --strip-components=1 --wildcards -xavf "$lfw" \
-        "$lfwbn/rockchip" \
-        "$lfwbn/rtl_nic" \
+    tar -C "$mountpt/usr/lib/firmware" --strip-components=1 --wildcards -xavf "$lfw" "$lfwbn/rockchip" "$lfwbn/rtl_nic" 
 
 
     # install device tree
@@ -133,19 +126,10 @@ main() {
     echo "$(file_apt_sources $deb_dist)\n" > "$mountpt/etc/apt/sources.list"
     echo "$(file_locale_cfg)\n" > "$mountpt/etc/default/locale"
 
-    # wpa supplicant
-    rm -rfv "$mountpt/etc/systemd/system/multi-user.target.wants/wpa_supplicant.service"
-    echo "$(file_wpa_supplicant_conf)\n" > "$mountpt/etc/wpa_supplicant/wpa_supplicant.conf"
-    cp -v "$mountpt/usr/share/dhcpcd/hooks/10-wpa_supplicant" "$mountpt/usr/lib/dhcpcd/dhcpcd-hooks"
 
-    # enable ll alias
-    sed -i '/alias.ll=/s/^#*\s*//' "$mountpt/etc/skel/.bashrc"
-    sed -i '/export.LS_OPTIONS/s/^#*\s*//' "$mountpt/root/.bashrc"
-    sed -i '/eval.*dircolors/s/^#*\s*//' "$mountpt/root/.bashrc"
-    sed -i '/alias.l.=/s/^#*\s*//' "$mountpt/root/.bashrc"
-
-    # motd (off by default)
-    is_param 'motd' "$@" && [ -f '../etc/motd-r5s' ] && cp -f '../etc/motd-r5s' "$mountpt/etc"
+    # Add custom support
+    cp -f 'files/etc' "$mountpt/etc"
+	cp -f 'files/usr' "$mountpt/usr"
 
     # hostname
     echo $hostname > "$mountpt/etc/hostname"
@@ -337,17 +321,6 @@ on_exit() {
 mountpt='rootfs'
 trap on_exit EXIT INT QUIT ABRT TERM
 
-file_fstab() {
-    local uuid="$1"
-
-    cat <<-EOF
-	# if editing the device name for the root entry, it is necessary
-	# to regenerate the extlinux.conf file by running /boot/mk_extlinux
-
-	# <device>					<mount>	<type>	<options>		<dump> <pass>
-	UUID=$uuid	/	ext4	errors=remount-ro	0      1
-	EOF
-}
 
 file_apt_sources() {
     local deb_dist="$1"
@@ -367,32 +340,8 @@ file_apt_sources() {
 	EOF
 }
 
-file_wpa_supplicant_conf() {
-    cat <<-EOF
-	ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-	update_config=1
-	EOF
-}
 
-file_locale_cfg() {
-    cat <<-EOF
-	LANG="C.UTF-8"
-	LANGUAGE=
-	LC_CTYPE="C.UTF-8"
-	LC_NUMERIC="C.UTF-8"
-	LC_TIME="C.UTF-8"
-	LC_COLLATE="C.UTF-8"
-	LC_MONETARY="C.UTF-8"
-	LC_MESSAGES="C.UTF-8"
-	LC_PAPER="C.UTF-8"
-	LC_NAME="C.UTF-8"
-	LC_ADDRESS="C.UTF-8"
-	LC_TELEPHONE="C.UTF-8"
-	LC_MEASUREMENT="C.UTF-8"
-	LC_IDENTIFICATION="C.UTF-8"
-	LC_ALL=
-	EOF
-}
+
 
 # download / return file from cache
 download() {
