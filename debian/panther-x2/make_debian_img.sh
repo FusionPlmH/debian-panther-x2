@@ -123,10 +123,21 @@ main() {
     umount "$mountpt/var/cache"
     umount "$mountpt/var/lib/apt/lists"
 
-    # apt sources & default locale
-    echo "$(file_apt_sources $deb_dist)\n" > "$mountpt/etc/apt/sources.list"
-    echo "$(file_locale_cfg)\n" > "$mountpt/etc/default/locale"
 
+    # apt sources 
+    cat > "$mountpt/etc/apt/sources.list" <<-EOF
+	# For information about how to configure apt package sources,
+	# see the sources.list(5) manual.
+
+	deb http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
+	#deb-src http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
+
+	deb http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
+	#deb-src http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
+
+	deb http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
+	#deb-src http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
+	EOF
 
     # Add custom support
     cp -f 'files/etc' "$mountpt/etc"
@@ -152,26 +163,22 @@ main() {
 
     # generate machine id on first boot
     rm -fv "$mountpt/etc/machine-id"
-	
-	
-	
+
 	# Download the Kernel
     echo -e "${STEPS} Start downloading kernel package..."
 
     # Download the kernel from [ releases ]
-	kernel_path="$(mktemp -d)"
-	inputs_kernel="5.10.160"
+    kernel_path="$(mktemp -d)"
+    inputs_kernel="5.10.160"
     kernel_down_from="https://github.com/ophub/kernel/releases/download/kernel_rk35xx/${inputs_kernel}.tar.gz"
     curl -fsSL "${kernel_down_from}" -o "${kernel_path}/5.10.160.tar.gz"
-	tar -mxzf "5.10.160.tar.gz" -C "${kernel_path}"
-	kernel_path="${kernel_path}/${inputs_kernel}"
+    tar -mxzf "5.10.160.tar.gz" -C "${kernel_path}"
+    kernel_path="${kernel_path}/${inputs_kernel}"
 
-    
-	
-	# Install kernel
-	PLATFORM='rockchip'
-	kernel_name="cd ${kernel_path}-rk35xx-ophub"
-	cd ${kernel_path}
+    # Install kernel
+    PLATFORM='rockchip'
+    kernel_name="cd ${kernel_path}-rk35xx-ophub"
+    cd ${kernel_path}
     rm -f /boot/config-* /boot/initrd.img-* /boot/System.map-* /boot/uInitrd-* /boot/vmlinuz-*
     rm -rf /boot/uInitrd /boot/Image /boot/zImage /boot/dtb-*
 
@@ -381,23 +388,7 @@ mountpt='rootfs'
 trap on_exit EXIT INT QUIT ABRT TERM
 
 
-file_apt_sources() {
-    local deb_dist="$1"
 
-    cat <<-EOF
-	# For information about how to configure apt package sources,
-	# see the sources.list(5) manual.
-
-	deb http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
-	#deb-src http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
-
-	deb http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
-	#deb-src http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
-
-	deb http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
-	#deb-src http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
-	EOF
-}
 
 
 
