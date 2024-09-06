@@ -21,6 +21,7 @@ main() {
     local acct_pass='debian'
     local extra_pkgs='curl, pciutils, sudo, unzip, wget, xxd, xz-utils, zip, zstd'
 
+
     if is_param 'clean' "$@"; then
         rm -rf cache*/var
         rm -f "$media"*
@@ -151,6 +152,64 @@ main() {
 
     # generate machine id on first boot
     rm -fv "$mountpt/etc/machine-id"
+	
+	
+	
+	# Download the Kernel
+    echo -e "${STEPS} Start downloading kernel package..."
+
+    # Download the kernel from [ releases ]
+	kernel_path="$(mktemp -d)"
+	inputs_kernel="5.10.160"
+    kernel_down_from="https://github.com/ophub/kernel/releases/download/kernel_rk35xx/${inputs_kernel}.tar.gz"
+    curl -fsSL "${kernel_down_from}" -o "${kernel_path}/5.10.160.tar.gz"
+	tar -mxzf "5.10.160.tar.gz" -C "${kernel_path}"
+	kernel_path="${kernel_path}/${inputs_kernel}"
+
+    
+	
+	# Install kernel
+	PLATFORM='rockchip'
+	kernel_name="cd ${kernel_path}-rk35xx-ophub"
+	cd ${kernel_path}
+    rm -f /boot/config-* /boot/initrd.img-* /boot/System.map-* /boot/uInitrd-* /boot/vmlinuz-*
+    rm -rf /boot/uInitrd /boot/Image /boot/zImage /boot/dtb-*
+
+    # 01. For /boot five files
+    tar -mxzf boot-${kernel_name}.tar.gz -C /boot
+    cd /boot && ln -sf uInitrd-${kernel_name} uInitrd && ln -sf vmlinuz-${kernel_name} Image
+    [[ "$(ls /boot/*${kernel_name}* -l 2>/dev/null | grep "^-" | wc -l)" -ge "4" ]] || error_msg "The /boot files is missing."
+    echo -e "${INFO} (1/4) Unpacking [ boot-${kernel_name}.tar.gz ] succeeded."
+
+    # 02. For /boot/dtb/${PLATFORM}/*
+    [[ -d "/boot/dtb/${PLATFORM}" ]] || mkdir -p /boot/dtb/${PLATFORM}
+    tar -mxzf dtb-${PLATFORM}-${kernel_name}.tar.gz -C /boot/dtb/${PLATFORM}
+    [[ "${PLATFORM}" == "rockchip" ]] && ln -sf dtb /boot/dtb-${kernel_name}
+    [[ "$(ls /boot/dtb/${PLATFORM} -l 2>/dev/null | grep "^-" | wc -l)" -ge "2" ]] || error_msg "/boot/dtb/${PLATFORM} files is missing."
+    echo -e "${INFO} (2/4) Unpacking [ dtb-${PLATFORM}-${kernel_name}.tar.gz ] succeeded."
+
+    # 03. For /usr/src/linux-headers-${kernel_name}, header file is optional
+    if [[ -f "header-${kernel_name}.tar.gz" ]]; then
+        header_path="linux-headers-${kernel_name}"
+        rm -rf /usr/src/linux-headers-* && mkdir -p "/usr/src/${header_path}"
+        tar -mxzf header-${kernel_name}.tar.gz -C /usr/src/${header_path}
+        [[ -d "/usr/src/${header_path}/include" ]] || error_msg "/usr/src/${header_path}/include folder is missing."
+        echo -e "${INFO} (3/4) Unpacking [ header-${kernel_name}.tar.gz ] succeeded."
+    else
+        echo -e "${PROMPT} (3/4) [ header-${kernel_name}.tar.gz ] file does not exist, skip unpacking."
+    fi
+
+    # 04. For /usr/lib/modules/${kernel_name}
+    rm -rf /usr/lib/modules/*
+    tar -mxzf modules-${kernel_name}.tar.gz -C /usr/lib/modules
+    [[ -n "${header_path}" ]] && (cd /usr/lib/modules/${kernel_name}/ && rm -f build source && ln -sf /usr/src/${header_path} build)
+    [[ -d "/usr/lib/modules/${kernel_name}" ]] || error_msg "/usr/lib/modules/${kernel_name} kernel folder is missing."
+    echo -e "${INFO} (4/4) Unpacking [ modules-${kernel_name}.tar.gz ] succeeded."
+
+
+    # Delete kernel tmpfiles
+    rm -f *${kernel_name}*.tar.gz 
+
 
     # reduce entropy on non-block media
     [ -b "$media" ] || fstrim -v "$mountpt"
