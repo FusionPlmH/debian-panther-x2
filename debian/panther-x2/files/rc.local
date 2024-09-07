@@ -50,6 +50,3 @@ else
     chmod 774 "$this"
     reboot
 fi
-
-
-exit 0
