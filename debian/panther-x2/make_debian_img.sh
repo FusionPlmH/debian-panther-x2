@@ -127,18 +127,18 @@ main() {
 
     # apt sources 
     cat > "$mountpt/etc/apt/sources.list" <<-EOF
-	# For information about how to configure apt package sources,
-	# see the sources.list(5) manual.
+    # For information about how to configure apt package sources,
+    # see the sources.list(5) manual.
 
-	deb http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
-	#deb-src http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
+    deb http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
+    #deb-src http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
 
-	deb http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
-	#deb-src http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
+    deb http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
+    #deb-src http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
 
-	deb http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
-	#deb-src http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
-	EOF
+    deb http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
+    #deb-src http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
+EOF
 
     # Add custom support
     cp -rf files/etc/ $mountpt/
@@ -164,7 +164,7 @@ main() {
     # generate machine id on first boot
     rm -fv "$mountpt/etc/machine-id"
 
-	# Download the Kernel
+    # Download the Kernel
     print_hdr "Start downloading kernel package..."
 
     # Download the kernel from [ releases ]
@@ -180,7 +180,7 @@ main() {
     kernel_name="${inputs_kernel}-rk35xx-ophub"
     cd ${kernel_path}
     rm -rf config-* initrd.img-* System.map-* uInitrd-* vmlinuz-* uInitrd Image zImage dtb-*
-	print_hdr "Remove old complete"
+    print_hdr "Remove old complete"
 
     # 01. For boot five files
     tar -mxzf $inputs_kernel/boot-${kernel_name}.tar.gz
@@ -208,9 +208,9 @@ main() {
 
 
     # Delete kernel tmpfiles
-	cd $CURRENT_DIR
+    cd $CURRENT_DIR
     rm -rf ${kernel_path}/${inputs_kernel}.tar.gz
-	rm -rf $kernel_version_path
+    rm -rf $kernel_version_path
 	
 
 
