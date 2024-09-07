@@ -7,14 +7,6 @@ custom_log="/tmp/custom.log"
 # Add custom log
 echo "[$(date +"%Y.%m.%d.%H:%M:%S")] Start the custom service..." >${custom_log}
 
-
-# Restart ssh service
-[[ -d "/var/run/sshd" ]] || mkdir -p -m0755 /var/run/sshd 2>/dev/null
-[[ -f "/etc/init.d/ssh" ]] && {
-    sleep 5 && /etc/init.d/ssh restart 2>/dev/null &&
-        echo "[$(date +"%Y.%m.%d.%H:%M:%S")] The ssh service restarted successfully." >>${custom_log}
-}
-
 # Add network performance optimization
 [[ -x "/usr/sbin/balethirq.pl" ]] && {
     perl /usr/sbin/balethirq.pl 2>/dev/null &&
