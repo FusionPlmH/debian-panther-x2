@@ -179,8 +179,7 @@ main() {
     PLATFORM='rockchip'
     kernel_name="${inputs_kernel}-rk35xx-ophub"
     cd ${kernel_path}
-    rm -f /boot/config-* /boot/initrd.img-* /boot/System.map-* /boot/uInitrd-* /boot/vmlinuz-*
-    rm -rf /boot/uInitrd /boot/Image /boot/zImage /boot/dtb-*
+    rm -rf config-* initrd.img-* System.map-* uInitrd-* vmlinuz-* uInitrd Image zImage dtb-*
 	print_hdr "Remove old complete"
 
     # 01. For boot five files
