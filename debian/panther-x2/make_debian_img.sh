@@ -2,6 +2,7 @@
 
 
 set -e
+CURRENT_DIR=$(pwd)
 
 # script exit codes:
 #   1: missing utility
@@ -140,8 +141,8 @@ main() {
 	EOF
 
     # Add custom support
-    cp -rf files/etc/ $mountpt/etc/
-    cp -rf files/usr/ $mountpt/usr/
+    cp -rf files/etc/ $mountpt/
+    cp -rf files/usr/ $mountpt/
 
     # hostname
     echo $hostname > "$mountpt/etc/hostname"
@@ -169,11 +170,10 @@ main() {
     # Download the kernel from [ releases ]
     kernel_path="$mountpt/boot"
     inputs_kernel="5.10.160"
-	kernel_version_path="${kernel_path}/${inputs_kernel}"
+    kernel_version_path="${kernel_path}/${inputs_kernel}"
     kernel_down_from="https://github.com/ophub/kernel/releases/download/kernel_rk35xx/${inputs_kernel}.tar.gz"
     wget "${kernel_down_from}" -o "${kernel_path}/${inputs_kernel}.tar.gz"
     tar -mxzf "${inputs_kernel}.tar.gz" -C "${kernel_path}"
-    
 
     # Install kernel
     PLATFORM='rockchip'
@@ -184,38 +184,32 @@ main() {
 	print_hdr "Remove old complete"
 
     # 01. For boot five files
-    tar -mxzf $inputs_kernel/boot-${kernel_name}.tar.gz  -C /boot
-    cd /boot && ln -sf uInitrd-${kernel_name} uInitrd && ln -sf vmlinuz-${kernel_name} Image
-    [ "$(ls /boot/*${kernel_name}* -l 2>/dev/null | grep "^-" | wc -l)" -ge "4" ] || error_msg "The /boot files is missing."
+    tar -mxzf $inputs_kernel/boot-${kernel_name}.tar.gz
+    ln -sf uInitrd-${kernel_name} uInitrd && ln -sf vmlinuz-${kernel_name} Image
     print_hdr " (1/4) Unpacking [ boot-${kernel_name}.tar.gz ] succeeded."
 
     # 02. For boot/dtb/${PLATFORM}/*
-    [ -d "/boot/dtb/${PLATFORM}" ] || mkdir -p /boot/dtb/${PLATFORM}
-    tar -mxzf $inputs_kernel/dtb-${PLATFORM}-${kernel_name}.tar.gz -C ./boot/dtb/${PLATFORM}
-    [ "${PLATFORM}" == "rockchip" ] && ln -sf dtb /boot/dtb-${kernel_name}
-    [ "$(ls /boot/dtb/${PLATFORM} -l 2>/dev/null | grep "^-" | wc -l)" -ge "2" ] || error_msg "/boot/dtb/${PLATFORM} files is missing."
+    mkdir -p dtb/${PLATFORM} 
+    tar -mxzf $inputs_kernel/dtb-${PLATFORM}-${kernel_name}.tar.gz -C dtb/${PLATFORM}
+    ln -sf dtb /dtb-${kernel_name}
     print_hdr "(2/4) Unpacking [ dtb-${PLATFORM}-${kernel_name}.tar.gz ] succeeded."
 
-    # 03. For /usr/src/linux-headers-${kernel_name}, header file is optional
-    if [ -f "header-${kernel_name}.tar.gz" ]; then
-        header_path="linux-headers-${kernel_name}"
-        rm -rf $mountpt/usr/src/linux-headers-* && mkdir -p "$mountpt/usr/src/${header_path}"
-        tar -mxzf $inputs_kernel/header-${kernel_name}.tar.gz -C $mountpt/usr/src/${header_path}
-        [ -d "$mountpt/usr/src/${header_path}/include" ] || error_msg "$mountpt/usr/src/${header_path}/include folder is missing."
-        print_hdr "(3/4) Unpacking [ header-${kernel_name}.tar.gz ] succeeded."
-    else
-        print_hdr  "(3/4) [ header-${kernel_name}.tar.gz ] file does not exist, skip unpacking."
-    fi
+    # 03. For /usr/src/linux-headers-${kernel_name}
+    header_path="linux-headers-${kernel_name}"
+    rm -rf $mountpt/usr/src/linux-headers-* 
+    mkdir -p $CURRENT_DIR/rootfs/usr/src/${header_path}
+    tar -mxzf $inputs_kernel/header-${kernel_name}.tar.gz -C $CURRENT_DIR/rootfs/usr/src/${header_path}
+    print_hdr "(3/4) Unpacking [ header-${kernel_name}.tar.gz ] succeeded."
+
 
     # 04. For /usr/lib/modules/${kernel_name}
     rm -rf $mountpt/usr/lib/modules/*
-    tar -mxzf $inputs_kernel/modules-${kernel_name}.tar.gz -C $mountpt/usr/lib/modules
-    [ -n "${header_path}" ] && (cd $mountpt/usr/lib/modules/${kernel_name}/ && rm -f build source && ln -sf $mountpt/usr/src/${header_path} build)
-    [ -d "$mountpt/usr/lib/modules/${kernel_name}" ] || error_msg "$mountpt/usr/lib/modules/${kernel_name} kernel folder is missing."
+    tar -mxzf $inputs_kernel/modules-${kernel_name}.tar.gz -C $CURRENT_DIR/rootfs/usr/lib/modules
     print_hdr "(4/4) Unpacking [ modules-${kernel_name}.tar.gz ] succeeded."
 
 
     # Delete kernel tmpfiles
+	cd $CURRENT_DIR
     rm -rf ${kernel_path}/${inputs_kernel}.tar.gz
 	rm -rf $kernel_version_path
 	
