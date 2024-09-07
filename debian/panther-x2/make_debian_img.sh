@@ -143,6 +143,11 @@ main() {
     # Add custom support
     cp -rf files/etc/ $mountpt/
     cp -rf files/usr/ $mountpt/
+    rm -rf $mountpt/etc/resol.conf
+    cat > "$mountpt/mountpt/etc/resol.conf" <<-EOF
+    nameserver 1.1.1.1
+    mameserver 8.8.8.8
+    EOF
 
     # hostname
     echo $hostname > "$mountpt/etc/hostname"
