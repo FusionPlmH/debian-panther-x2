@@ -138,7 +138,7 @@ main() {
 
     deb http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
     #deb-src http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
-EOF
+    EOF
 
     # Add custom support
     cp -rf files/etc/ $mountpt/
