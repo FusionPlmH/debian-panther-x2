@@ -208,7 +208,7 @@ EOF
 
 
     # setup extlinux boot
-	cd $CURRENT_DIR
+    cd $CURRENT_DIR
     install -Dvm 754 'files/dtb_cp' "$mountpt/etc/kernel/postinst.d/dtb_cp"
     install -Dvm 754 'files/dtb_rm' "$mountpt/etc/kernel/postrm.d/dtb_rm"
     install -Dvm 754 'files/mk_extlinux' "$mountpt/boot/mk_extlinux"
