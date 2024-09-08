@@ -215,7 +215,7 @@ EOF
 
 
     # Delete related files
-\    rm -f $CURRENT_DIR/rootfs/var/lib/dpkg/info/linux-image*
+    rm -f $CURRENT_DIR/rootfs/var/lib/dpkg/info/linux-image*
     rm -rf $CURRENT_DIR/rootfs/usr/share/doc/linux-image-*
     rm -rf $CURRENT_DIR/rootfs/usr/lib/linux-image-*
 
