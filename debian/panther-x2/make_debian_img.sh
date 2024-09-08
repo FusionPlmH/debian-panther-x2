@@ -144,7 +144,7 @@ EOF
     cp -rf files/etc/ $mountpt/
     cp -rf files/usr/ $mountpt/
     rm -rf $mountpt/etc/resolv.conf
-    cat > "$mountpt/mountpt/etc/resolv.conf" <<-EOF
+    cat > "$mountpt/etc/resolv.conf" <<-EOF
     nameserver 1.1.1.1
     mameserver 8.8.8.8
 EOF
