@@ -90,12 +90,7 @@ main() {
     echo 'do_symlinks = 0' >> "$mountpt/etc/kernel-img.conf"
 
 
-    # setup extlinux boot
-    install -Dvm 754 'files/dtb_cp' "$mountpt/etc/kernel/postinst.d/dtb_cp"
-    install -Dvm 754 'files/dtb_rm' "$mountpt/etc/kernel/postrm.d/dtb_rm"
-    install -Dvm 754 'files/mk_extlinux' "$mountpt/boot/mk_extlinux"
-    ln -svf '../../../boot/mk_extlinux' "$mountpt/etc/kernel/postinst.d/update_extlinux"
-    ln -svf '../../../boot/mk_extlinux' "$mountpt/etc/kernel/postrm.d/update_extlinux"
+
 
     print_hdr "installing firmware"
     mkdir -p "$mountpt/usr/lib/firmware"
@@ -212,8 +207,15 @@ EOF
     print_hdr "(4/4) Unpacking [ modules-${kernel_name}.tar.gz ] succeeded."
 
 
+    # setup extlinux boot
+	cd $CURRENT_DIR
+    install -Dvm 754 'files/dtb_cp' "$mountpt/etc/kernel/postinst.d/dtb_cp"
+    install -Dvm 754 'files/dtb_rm' "$mountpt/etc/kernel/postrm.d/dtb_rm"
+    install -Dvm 754 'files/mk_extlinux' "$mountpt/boot/mk_extlinux"
+    ln -svf '../../../boot/mk_extlinux' "$mountpt/etc/kernel/postinst.d/update_extlinux"
+    ln -svf '../../../boot/mk_extlinux' "$mountpt/etc/kernel/postrm.d/update_extlinux"
+	
     # Delete kernel tmpfiles
-    cd $CURRENT_DIR
     rm -rf ${kernel_path}/${inputs_kernel}.tar.gz
     rm -rf $kernel_version_path
 	
@@ -242,7 +244,10 @@ EOF
         echo "\n${cya}copy image to media:${rst}"
         echo "  ${cya}sudo sh -c 'cat $media > /dev/sdX && sync'${rst}"
     fi
+	rm -rf  cache.$deb_dist $inputs_kernel.tar.gz
     echo
+	
+	
 }
 
 make_image_file() {
