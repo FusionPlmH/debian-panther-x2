@@ -186,7 +186,7 @@ EOF
     PLATFORM='rockchip'
     kernel_name="${inputs_kernel}-rk35xx-ophub"
     cd ${kernel_path}
-    rm -rf *
+    rm -rf config-* initrd.img-* System.map-* uInitrd-* vmlinuz-* uInitrd Image zImage dtb-*
     print_hdr "Remove old complete"
 
     # 01. For boot five files
@@ -229,15 +229,15 @@ EOF
 	
     # Copy the bootloader files
     mkdir -p $mountpt/usr/lib/u-boot
-    cp -af $uboot_spl /usr/lib/u-boot/
-    cp -af $uboot_itb /usr/lib/u-boot/
+    cp -af $uboot_spl $mountpt/usr/lib/u-boot/
+    cp -af $uboot_itb $mountpt/usr/lib/u-boot/
 	
-    ln -sf usr/bin bin
-    ln -sf usr/lib lib
-    ln -sf usr/sbin sbin
-    ln -sf ../run/lock var/lock
-    ln -sf ../run var/run
-    ln -sf ../usr/share/zoneinfo/Asia/Shanghai etc/localtime
+    ln -sf $mountpt/usr/bin $mountpt/bin
+    ln -sf $mountpt/usr/lib $mountpt/lib
+    ln -sf $mountpt/usr/sbin $mountpt/sbin
+    ln -sf $mountpt/run/lock $mountpt/var/lock
+    ln -sf $mountpt/run $mountpt/var/run
+    ln -sf $mountpt/usr/share/zoneinfo/Asia/Shanghai $mountpt/etc/localtime
 	
     # Delete kernel tmpfiles
     rm -rf ${kernel_path}/${inputs_kernel}.tar.gz
