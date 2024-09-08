@@ -138,16 +138,16 @@ main() {
 
     deb http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
     #deb-src http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
-    EOF
+EOF
 
     # Add custom support
     cp -rf files/etc/ $mountpt/
     cp -rf files/usr/ $mountpt/
-    rm -rf $mountpt/etc/resol.conf
-    cat > "$mountpt/mountpt/etc/resol.conf" <<-EOF
+    rm -rf $mountpt/etc/resolv.conf
+    cat > "$mountpt/mountpt/etc/resolv.conf" <<-EOF
     nameserver 1.1.1.1
     mameserver 8.8.8.8
-    EOF
+EOF
 
     # hostname
     echo $hostname > "$mountpt/etc/hostname"
