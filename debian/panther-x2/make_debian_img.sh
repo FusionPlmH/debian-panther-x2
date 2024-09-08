@@ -122,27 +122,34 @@ main() {
 
     # apt sources 
     cat > "$mountpt/etc/apt/sources.list" <<-EOF
-# For information about how to configure apt package sources,
-# see the sources.list(5) manual.
+    # For information about how to configure apt package sources,
+    # see the sources.list(5) manual.
 
-deb http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
-#deb-src http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
+    deb http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
+    #deb-src http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
 
-deb http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
-#deb-src http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
+    deb http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
+    #deb-src http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
 
-deb http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
-#deb-src http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
+    deb http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
+    #deb-src http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
 EOF
 
     # Add custom support
     cp -rf files/etc/ $mountpt/
     cp -rf files/usr/ $mountpt/
     rm -rf $mountpt/etc/resolv.conf
+	rm -rf $mountpt/usr/lib/systemd/resolv.conf
     cat > "$mountpt/etc/resolv.conf" <<-EOF
-nameserver 1.1.1.1
-mameserver 8.8.8.8
+    nameserver 1.1.1.1
+    mameserver 8.8.8.8
 EOF
+    cat > "$mountpt/usr/lib/systemd/resolv.conf" <<-EOF
+    nameserver 1.1.1.1
+    mameserver 8.8.8.8
+EOF
+
+
 
     # hostname
     echo $hostname > "$mountpt/etc/hostname"
@@ -179,7 +186,7 @@ EOF
     PLATFORM='rockchip'
     kernel_name="${inputs_kernel}-rk35xx-ophub"
     cd ${kernel_path}
-    rm -rf config-* initrd.img-* System.map-* uInitrd-* vmlinuz-* uInitrd Image zImage dtb-*
+    rm -rf *
     print_hdr "Remove old complete"
 
     # 01. For boot five files
@@ -207,6 +214,11 @@ EOF
     print_hdr "(4/4) Unpacking [ modules-${kernel_name}.tar.gz ] succeeded."
 
 
+    # Delete related files
+\    rm -f $CURRENT_DIR/rootfs/var/lib/dpkg/info/linux-image*
+    rm -rf $CURRENT_DIR/rootfs/usr/share/doc/linux-image-*
+    rm -rf $CURRENT_DIR/rootfs/usr/lib/linux-image-*
+
     # setup extlinux boot
     cd $CURRENT_DIR
     install -Dvm 754 'files/dtb_cp' "$mountpt/etc/kernel/postinst.d/dtb_cp"
@@ -215,12 +227,24 @@ EOF
     ln -svf '../../../boot/mk_extlinux' "$mountpt/etc/kernel/postinst.d/update_extlinux"
     ln -svf '../../../boot/mk_extlinux' "$mountpt/etc/kernel/postrm.d/update_extlinux"
 	
+    # Copy the bootloader files
+    mkdir -p $mountpt/usr/lib/u-boot
+    cp -af $uboot_spl /usr/lib/u-boot/
+    cp -af $uboot_itb /usr/lib/u-boot/
+	
+    ln -sf usr/bin bin
+    ln -sf usr/lib lib
+    ln -sf usr/sbin sbin
+    ln -sf ../run/lock var/lock
+    ln -sf ../run var/run
+    ln -sf ../usr/share/zoneinfo/Asia/Shanghai etc/localtime
+	
     # Delete kernel tmpfiles
     rm -rf ${kernel_path}/${inputs_kernel}.tar.gz
     rm -rf $kernel_version_path
 	
 
-
+	
     # reduce entropy on non-block media
     [ -b "$media" ] || fstrim -v "$mountpt"
 
@@ -230,6 +254,8 @@ EOF
     print_hdr "installing u-boot"
     dd bs=4K seek=8 if="$uboot_spl" of="$media" conv=notrunc
     dd bs=4K seek=2048 if="$uboot_itb" of="$media" conv=notrunc,fsync
+	
+
 
     if $compress; then
         print_hdr "compressing image file"
