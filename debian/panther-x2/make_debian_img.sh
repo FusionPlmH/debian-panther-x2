@@ -122,17 +122,17 @@ main() {
 
     # apt sources 
     cat > "$mountpt/etc/apt/sources.list" <<-EOF
-    # For information about how to configure apt package sources,
-    # see the sources.list(5) manual.
+# For information about how to configure apt package sources,
+# see the sources.list(5) manual.
 
-    deb http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
-    #deb-src http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
+deb http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
+#deb-src http://deb.debian.org/debian ${deb_dist} main contrib non-free non-free-firmware
 
-    deb http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
-    #deb-src http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
+deb http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
+#deb-src http://deb.debian.org/debian-security ${deb_dist}-security main contrib non-free non-free-firmware
 
-    deb http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
-    #deb-src http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
+deb http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
+#deb-src http://deb.debian.org/debian ${deb_dist}-updates main contrib non-free non-free-firmware
 EOF
 
     # Add custom support
@@ -140,8 +140,8 @@ EOF
     cp -rf files/usr/ $mountpt/
     rm -rf $mountpt/etc/resolv.conf
     cat > "$mountpt/etc/resolv.conf" <<-EOF
-    nameserver 1.1.1.1
-    mameserver 8.8.8.8
+nameserver 1.1.1.1
+mameserver 8.8.8.8
 EOF
 
     # hostname
