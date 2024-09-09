@@ -96,9 +96,7 @@ main() {
     mkdir -p "$mountpt/usr/lib/firmware"
     local lfwn=$(basename "$lfw")
     local lfwbn="${lfwn%%.*}"
-	tar -mxzf $lfw" -C "$mountpt/usr/lib/firmware"
-#    tar -C "$mountpt/usr/lib/firmware" --strip-components=1 --wildcards -xavf "$lfw" "$lfwbn/rockchip" "$lfwbn/rtl_nic" 
-
+    tar -mxzf $lfw" -C "$mountpt/usr/lib/firmware"
 
     # install device tree
     install -vm 644 "$dtb" "$mountpt/boot"
@@ -140,7 +138,7 @@ EOF
     cp -rf files/etc/ $mountpt/
     cp -rf files/usr/ $mountpt/
     rm -rf $mountpt/etc/resolv.conf
-	rm -rf $mountpt/usr/lib/systemd/resolv.conf
+    rm -rf $mountpt/usr/lib/systemd/resolv.conf
     cat > "$mountpt/etc/resolv.conf" <<-EOF
     nameserver 1.1.1.1
     mameserver 8.8.8.8
