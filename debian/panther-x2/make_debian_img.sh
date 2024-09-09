@@ -60,13 +60,13 @@ main() {
     local lfw=$(download "$cache" 'https://mirrors.edge.kernel.org/pub/linux/kernel/firmware/linux-firmware-20240811.tar.xz')
 
     # u-boot
-    local uboot_spl=$(download "$cache" 'https://github.com/FusionPlmH/debian-panther-x2/raw/main/uboot/idbloader.img')
+    local uboot_spl=$(download "$cache" 'https://github.com/ophub/u-boot/blob/main/u-boot/rockchip/panther-x2/idbloader.img')
     [ -f "$uboot_spl" ] || { echo "unable to fetch $uboot_spl"; exit 4; }
-    local uboot_itb=$(download "$cache" 'https://github.com/FusionPlmH/debian-panther-x2/raw/main/uboot/u-boot.itb')
+    local uboot_itb=$(download "$cache" 'https://github.com/ophub/u-boot/blob/main/u-boot/rockchip/panther-x2/u-boot.itb')
     [ -f "$uboot_itb" ] || { echo "unable to fetch: $uboot_itb"; exit 4; }
 
     # dtb
-    local dtb=$(download "$cache" "https://github.com/FusionPlmH/debian-panther-x2/raw/main/dtb/rk3566-panther-x2.dtb")
+    local dtb=$(download "$cache" "https://github.com/ophub/amlogic-s9xxx-armbian/blob/main/build-armbian/armbian-files/platform-files/rockchip/bootfs/dtb/rockchip/rk3566-panther-x2.dtb")
     [ -f "$dtb" ] || { echo "unable to fetch $dtb"; exit 4; }
 
     # setup media
@@ -176,7 +176,7 @@ EOF
 
     # Download the kernel from [ releases ]
     kernel_path="$mountpt/boot"
-    inputs_kernel="5.10.160"
+    inputs_kernel="6.1.75"
     kernel_version_path="${kernel_path}/${inputs_kernel}"
     kernel_down_from="https://github.com/ophub/kernel/releases/download/kernel_rk35xx/${inputs_kernel}.tar.gz"
     wget "${kernel_down_from}" -o "${kernel_path}/${inputs_kernel}.tar.gz"
@@ -219,6 +219,14 @@ EOF
     rm -rf $CURRENT_DIR/rootfs/usr/share/doc/linux-image-*
     rm -rf $CURRENT_DIR/rootfs/usr/lib/linux-image-*
 
+
+	
+    # Copy the bootloader files
+    mkdir -p $mountpt/usr/lib/u-boot
+    cp -af $uboot_spl $mountpt/usr/lib/u-boot/
+    cp -af $uboot_itb $mountpt/usr/lib/u-boot/
+	
+	
     # setup extlinux boot
     cd $CURRENT_DIR
     install -Dvm 754 'files/dtb_cp' "$mountpt/etc/kernel/postinst.d/dtb_cp"
@@ -226,11 +234,6 @@ EOF
     install -Dvm 754 'files/mk_extlinux' "$mountpt/boot/mk_extlinux"
     ln -svf '../../../boot/mk_extlinux' "$mountpt/etc/kernel/postinst.d/update_extlinux"
     ln -svf '../../../boot/mk_extlinux' "$mountpt/etc/kernel/postrm.d/update_extlinux"
-	
-    # Copy the bootloader files
-    mkdir -p $mountpt/usr/lib/u-boot
-    cp -af $uboot_spl $mountpt/usr/lib/u-boot/
-    cp -af $uboot_itb $mountpt/usr/lib/u-boot/
 	
     ln -sf $mountpt/usr/bin $mountpt/bin
     ln -sf $mountpt/usr/lib $mountpt/lib
