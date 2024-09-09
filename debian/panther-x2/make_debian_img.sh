@@ -60,13 +60,13 @@ main() {
     local lfw=$(download "$cache" 'https://mirrors.edge.kernel.org/pub/linux/kernel/firmware/linux-firmware-20240811.tar.xz')
 
     # u-boot
-    local uboot_spl=$(download "$cache" 'https://github.com/ophub/u-boot/blob/main/u-boot/rockchip/panther-x2/idbloader.img')
+    local uboot_spl=$(download "$cache" 'https://github.com/FusionPlmH/debian-panther-x2/raw/main/uboot/idbloader.img')
     [ -f "$uboot_spl" ] || { echo "unable to fetch $uboot_spl"; exit 4; }
-    local uboot_itb=$(download "$cache" 'https://github.com/ophub/u-boot/blob/main/u-boot/rockchip/panther-x2/u-boot.itb')
+    local uboot_itb=$(download "$cache" 'https://github.com/FusionPlmH/debian-panther-x2/raw/main/uboot/u-boot.itb')
     [ -f "$uboot_itb" ] || { echo "unable to fetch: $uboot_itb"; exit 4; }
 
     # dtb
-    local dtb=$(download "$cache" "https://github.com/ophub/amlogic-s9xxx-armbian/blob/main/build-armbian/armbian-files/platform-files/rockchip/bootfs/dtb/rockchip/rk3566-panther-x2.dtb")
+    local dtb=$(download "$cache" "https://github.com/FusionPlmH/debian-panther-x2/raw/main/dtb/rk3566-panther-x2.dtb")
     [ -f "$dtb" ] || { echo "unable to fetch $dtb"; exit 4; }
 
     # setup media
@@ -96,7 +96,8 @@ main() {
     mkdir -p "$mountpt/usr/lib/firmware"
     local lfwn=$(basename "$lfw")
     local lfwbn="${lfwn%%.*}"
-    tar -C "$mountpt/usr/lib/firmware" --strip-components=1 --wildcards -xavf "$lfw" "$lfwbn/rockchip" "$lfwbn/rtl_nic" 
+	tar -mxzf $lfw" -C "$mountpt/usr/lib/firmware"
+#    tar -C "$mountpt/usr/lib/firmware" --strip-components=1 --wildcards -xavf "$lfw" "$lfwbn/rockchip" "$lfwbn/rtl_nic" 
 
 
     # install device tree
@@ -220,12 +221,6 @@ EOF
     rm -rf $CURRENT_DIR/rootfs/usr/lib/linux-image-*
 
 
-	
-    # Copy the bootloader files
-    mkdir -p $mountpt/usr/lib/u-boot
-    cp -af $uboot_spl $mountpt/usr/lib/u-boot/
-    cp -af $uboot_itb $mountpt/usr/lib/u-boot/
-	
 	
     # setup extlinux boot
     cd $CURRENT_DIR
